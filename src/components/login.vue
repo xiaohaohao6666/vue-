@@ -30,6 +30,7 @@ export default {
         username: "",
         password: ""
       },
+      
       // 表单的验证规则
       rules: {
         username: [
