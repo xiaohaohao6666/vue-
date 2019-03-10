@@ -17,7 +17,7 @@
         <el-input type="password" v-model.trim="formData.password" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button class="button" type="primary" @click="submitForm('formData')">提交</el-button>
+        <el-button class="button" type="primary" @click="submitForm('ruleForm2')">提交</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -30,7 +30,6 @@ export default {
         username: "",
         password: ""
       },
-      
       // 表单的验证规则
       rules: {
         username: [
@@ -43,36 +42,59 @@ export default {
         ],
       }
     };
-  }
+  },
+  methods: {
+    submitForm(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            // 2.正确 发请求 验证
+            this.$http.post('/login',this.formData)
+            .then(res=>{
+              console.log(res);
+              if(res.data.meta.status!=200){
+                this.$message.error(res.data.meta.msg);
+              } else {
+                this.$router.push('/');
+                window.sessionStorage.setItem('token',res.data.data.token);
+                this.$message.success(res.data.meta.msg);
+              }
+            })
+          } else {
+            // 1.先验证 数据格式是否正确 
+            this.$message.error('请输入正确的用户名和密码');
+            return false;
+          }
+        });
+      },
+  },
 };
 </script>
 <style>
-body,
-html {
-  height: 100%;
-  width: 100%;
-}
+html,
 body {
-  background-color: #324152;
-  padding: 0;
-  margin: 0;
-}
-body > div {
-  width: 100%;
   height: 100%;
+  margin: 0;
+  padding: 0;
+}
+body > div:first-of-type {
+  height: 100%;
+}
+.login {
+  background-color: #324152;
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 100%;
 }
-.login {
+.el-form {
   width: 580px;
-  height: 436px;
-  background-color: #fff;
-  padding: 40px;
+  height: 440px;
   box-sizing: border-box;
+  padding: 40px;
   border-radius: 10px;
+  background-color: white;
 }
-.login .button {
+.login-btn {
   width: 100%;
 }
 </style>
