@@ -17,7 +17,7 @@
         <el-input type="password" v-model.trim="formData.password" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button class="button" type="primary" @click="submitForm('ruleForm2')">提交</el-button>
+        <el-button class="button login-btn" type="primary" @click="submitForm('ruleForm2')">提交</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -44,24 +44,24 @@ export default {
     };
   },
   methods: {
+    
     submitForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
             // 2.正确 发请求 验证
             this.$http.post('/login',this.formData)
             .then(res=>{
-              console.log(res);
-              if(res.data.meta.status!=200){
-                this.$message.error(res.data.meta.msg);
+              if(res.data.meta.status==400){
+                // this.$message.error(res.data.meta.msg);
               } else {
-                this.$router.push('/');
                 window.sessionStorage.setItem('token',res.data.data.token);
-                this.$message.success(res.data.meta.msg);
+                // this.$message.success(res.data.meta.msg);
+                this.$router.push('/');
               }
             })
           } else {
             // 1.先验证 数据格式是否正确 
-            this.$message.error('请输入正确的用户名和密码');
+            // this.$message.error('请输入正确的用户名和密码');
             return false;
           }
         });

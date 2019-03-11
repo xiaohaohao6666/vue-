@@ -33,21 +33,39 @@
       </el-col>
     </el-header>
     <el-container>
-      <el-aside class="my-aside" width="200px">Aside</el-aside>
-      <el-main class="my-main">Main</el-main>
+      <el-aside class="my-aside" width="200px">
+        <el-menu
+          unique-opened
+          router
+          default-active="2"
+          class="el-menu-vertical-demo"
+        >
+          <el-submenu index="1">
+            <template slot="title">
+              <i class="el-icon-location"></i>
+              <span>用户管理</span>
+            </template>
+              <el-menu-item index="users"><span class="el-icon-menu"></span>用户列表</el-menu-item>
+          </el-submenu>
+          <el-submenu index="2">
+            <template slot="title">
+              <i class="el-icon-location"></i>
+              <span>导航一</span>
+            </template>
+              <el-menu-item index="users"><span class="el-icon-menu"></span>选项1</el-menu-item>
+          </el-submenu>
+        </el-menu>
+      </el-aside>
+
+      <el-main class="my-main">
+        <router-view></router-view>
+      </el-main>
+      
     </el-container>
   </el-container>
 </template>
 <script>
 export default {
-  beforeCreate() {
-    // console.log(window.sessionStorage.getItem('token'));
-    if (window.sessionStorage.getItem("token") == null) {
-      this.$router.push("/login");
-      this.$message.info("要登录,才能访问啊!");
-      return false;
-    }
-  },
   methods: {
     exit() {
       this.$confirm("是否要退出, 是否继续?", "提示", {
@@ -57,7 +75,7 @@ export default {
       })
         .then(() => {
           window.sessionStorage.removeItem("token");
-          this.$router.push('/login');
+          this.$router.push("login");
         })
         .catch(() => {
           this.$message({
@@ -65,7 +83,6 @@ export default {
             message: "还有点良心"
           });
         });
-      
     }
   }
 };
@@ -96,5 +113,6 @@ export default {
 }
 .my-main {
   background-color: #e9eef3;
+  padding-top: 0;
 }
 </style>
