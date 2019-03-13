@@ -34,25 +34,16 @@
     </el-header>
     <el-container>
       <el-aside class="my-aside" width="200px">
-        <el-menu
-          unique-opened
-          router
-          default-active="2"
-          class="el-menu-vertical-demo"
-        >
-          <el-submenu index="1">
+        <el-menu unique-opened router default-active="2" class="el-menu-vertical-demo">
+          <el-submenu :index="String(index)" v-for="(item, index) in menus">
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>用户管理</span>
+              <span>{{item.authName}}</span>
             </template>
-              <el-menu-item index="users"><span class="el-icon-menu"></span>用户列表</el-menu-item>
-          </el-submenu>
-          <el-submenu index="2">
-            <template slot="title">
-              <i class="el-icon-location"></i>
-              <span>导航一</span>
-            </template>
-              <el-menu-item index="users"><span class="el-icon-menu"></span>选项1</el-menu-item>
+            <el-menu-item :index="it.path" v-for="it in item.children">
+              <span class="el-icon-menu"></span>
+              {{it.authName}}
+            </el-menu-item>
           </el-submenu>
         </el-menu>
       </el-aside>
@@ -60,12 +51,16 @@
       <el-main class="my-main">
         <router-view></router-view>
       </el-main>
-      
     </el-container>
   </el-container>
 </template>
 <script>
 export default {
+  data() {
+    return {
+      menus: []
+    };
+  },
   methods: {
     exit() {
       this.$confirm("是否要退出, 是否继续?", "提示", {
@@ -84,6 +79,11 @@ export default {
           });
         });
     }
+  },
+  async created() {
+    let res = await this.$http.get("menus");
+    console.log(res);
+    this.menus = res.data.data;
   }
 };
 </script>

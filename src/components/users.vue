@@ -36,7 +36,12 @@
       <el-table-column prop="mobile" label="电话"></el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-switch @change="statusChange(scope.row)" v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+          <el-switch
+            @change="statusChange(scope.row)"
+            v-model="scope.row.mg_state"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+          ></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作">
@@ -46,20 +51,34 @@
             type="primary"
             icon="el-icon-edit"
             size="mini"
-            @click="handleEdit(scope.$index, scope.row)"
             plain
+            @click="handleEdit(scope.row)"
           ></el-button>
-          <el-button type="danger" icon="el-icon-delete" size="mini" plain @click="delOne(scope.row)"></el-button>
-          <el-button type="success" icon="el-icon-check" size="mini" plain></el-button>
+          <el-button
+            type="danger"
+            icon="el-icon-delete"
+            size="mini"
+            plain
+            @click="delOne(scope.row)"
+          ></el-button>
+          <el-button
+            type="success"
+            icon="el-icon-check"
+            size="mini"
+            plain
+            @click="roleOne(scope.row)"
+          ></el-button>
         </template>
       </el-table-column>
     </el-table>
     <!-- 分页 -->
     <el-pagination
-      :page-sizes="[100, 200, 300, 400]"
+      @size-change="changeSize"
+      @current-change="changeCurrent"
+      :page-sizes="[5, 10, 15, 20]"
       :page-size="100"
       layout="total, sizes, prev, pager, next, jumper"
-      :total="400"
+      :total="total"
     ></el-pagination>
     <!-- 添加 -->
     <el-dialog title="添加用户" :visible.sync="dialogFormVisible" class="my-dialong">
@@ -80,6 +99,44 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="submitForm('ruleForm')">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- 编辑 -->
+    <el-dialog title="修改用户" :visible.sync="editFormVisible" class="my-dialong">
+      <el-form :model="editForm" :rules="rules" ref="editForm" status-icon class="my-form">
+        <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
+          <el-input disabled v-model="editForm.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="email">
+          <el-input v-model="editForm.email" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="电话" :label-width="formLabelWidth" prop="mobile">
+          <el-input v-model="editForm.mobile" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitForm('editForm')">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- 角色 -->
+    <el-dialog title="分配角色" :visible.sync="roleFormVisible" class="my-dialong">
+      <el-form :model="roleForm" :rules="rules" ref="roleForm" class="my-form">
+        <el-form-item label="当前用户" :label-width="formLabelWidth">{{roleForm.username}}</el-form-item>
+        <el-form-item label="请选择角色" :label-width="formLabelWidth">
+          <el-select v-model="roleForm.role_name" placeholder="请选择">
+            <el-option
+              v-for="item in roleList"
+              :key="item.value"
+              :label="item.roleName"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="roleFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitForm('roleForm')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -131,10 +188,11 @@ export default {
         email: [{ validator: checkEmail, trigger: "blur" }],
         mobile: [{ validator: checkMobile, trigger: "blur" }]
       },
+      total: 0,
       sendData: {
         query: "",
         pagenum: 1,
-        pagesize: 10
+        pagesize: 5
       },
       tableData: [],
       addForm: {
@@ -143,36 +201,83 @@ export default {
         email: "",
         mobile: ""
       },
+      editForm: {
+        username: "",
+        email: "",
+        mobile: ""
+      },
+      roleForm: {},
+      roleList: [],
       formLabelWidth: "120px",
-      dialogFormVisible: false
+      dialogFormVisible: false,
+      editFormVisible: false,
+      roleFormVisible: false
     };
   },
 
   //
   methods: {
-    handleEdit(index, row) {
-      console.log(index);
-      console.log(row);
+    // 分页
+    changeSize(size) {
+      // console.log(size);
+      this.sendData.pagesize = size;
+      this.search();
+    },
+    changeCurrent(current) {
+      // console.log(current);
+      this.sendData.pagenum = current;
+      this.search();
+    },
+    //
+    async roleOne(row) {
+      this.roleFormVisible = true;
+      let res = await this.$http.get("roles");
+      // console.log(row);
+      this.roleForm = row;
+      this.roleList = res.data.data;
+    },
+    async handleEdit(row) {
+      // console.log(row);
+      this.editFormVisible = true;
+      let res = await this.$http.get(`users/${row.id}`);
+      // console.log(res);
+      this.editForm = res.data.data;
     },
     async search() {
       let res = await this.$http.get("users", {
-        params: this.sendData,
-        headers: { Authorization: window.sessionStorage.getItem("token") }
+        params: this.sendData
       });
-      console.log(res);
+      // console.log(res);
       this.tableData = res.data.data.users;
+      this.total = res.data.data.total;
     },
     //
     submitForm(formName) {
       this.$refs[formName].validate(async valid => {
+        let res;
         if (valid) {
           // 成功
-          let res = await this.$http.post("users", this.addForm);
-          console.log(res);
+          // console.log(formName);
+          if (formName == "ruleForm") {
+            res = await this.$http.post("users", this.addForm);
+          } else if (formName == "editForm") {
+            res = await this.$http.put(
+              `users/${this.editForm.id}`,
+              this.editForm
+            );
+          } else if (formName == "roleForm") {
+            // console.log();
+            res = await this.$http.put(`users/${this.roleForm.id}/role`,{
+              rid: this.roleForm.role_name
+              });
+          }
+          // if()
           //判断是否创建成功
-          if (res.data.meta.status == "201") {
+          if (res.data.meta.status == "201" || res.data.meta.status == "200") {
             this.search();
             this.dialogFormVisible = false;
+            this.editFormVisible = false;
+            this.roleFormVisible = false;
             this.$refs[formName].resetFields();
           }
         } else {
@@ -182,34 +287,35 @@ export default {
         }
       });
     },
-    // 
-    async statusChange(item){
-        // console.log(item);
-        await this.$http.put(`users/${item.id}/state/${item.mg_state}`);
+    //
+    async statusChange(item) {
+      // console.log(item);
+      await this.$http.put(`users/${item.id}/state/${item.mg_state}`);
     },
-    // 
+    //
     delOne(item) {
-        this.$confirm('此操作将永久删除该成员, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(async () => {
-          let res = await this.$http.delete(`users/${item.id}`)
-          if(res.data.meta.status == 200){
-              this.search();
+      this.$confirm("此操作将永久删除该成员, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(async () => {
+          let res = await this.$http.delete(`users/${item.id}`);
+          if (res.data.meta.status == 200) {
+            this.search();
           }
           this.$message({
-            type: 'success',
-            message: '删除成功!'
+            type: "success",
+            message: "删除成功!"
           });
-        }).catch(() => {
+        })
+        .catch(() => {
           this.$message({
-            type: 'info',
-            message: '已取消删除'
-          });          
+            type: "info",
+            message: "已取消删除"
+          });
         });
-      }
-
+    }
   },
 
   //
