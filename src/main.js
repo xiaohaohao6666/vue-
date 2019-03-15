@@ -15,6 +15,10 @@ import router from './lib/router'
 import http from './lib/http'
 Vue.use(http)
 
+// 导入面包屑
+import breadcrumb from './components/breadcrumb.vue'
+Vue.component('breadcrumb',breadcrumb);
+
 new Vue({
   router,
   render: h => h(App)

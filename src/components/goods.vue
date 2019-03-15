@@ -30,16 +30,7 @@
       <el-table-column prop="username" label="姓名" width="180"></el-table-column>
       <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
       <el-table-column prop="mobile" label="电话"></el-table-column>
-      <el-table-column label="操作">
-        <template slot-scope="scope">
-          <el-switch
-            @change="statusChange(scope.row)"
-            v-model="scope.row.mg_state"
-            active-color="#13ce66"
-            inactive-color="#ff4949"
-          ></el-switch>
-        </template>
-      </el-table-column>
+      
       <el-table-column label="操作">
         <template slot-scope="scope">
           <!-- <el-button size="mini">编辑</el-button> -->
@@ -330,7 +321,5 @@ export default {
   padding-left: 0;
   padding-right: 0;
 }
-/* .el-dialog__body {
-  padding: 0;
-} */
+
 </style>
