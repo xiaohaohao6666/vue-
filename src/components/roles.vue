@@ -110,10 +110,10 @@ export default {
     };
   },
   methods: {
-    async getTree(){
+    async getTree() {
       let res = await this.$http.get("roles");
-    // console.log(res);
-    this.tableData5 = res.data.data;
+      // console.log(res);
+      this.tableData5 = res.data.data;
     },
 
     async delx(item, tag) {
@@ -128,47 +128,52 @@ export default {
       // console.log(res);
       this.treeData = res.data.data;
       this.treeVisible = true;
-      this.strictly = true;
+      // this.strictly = true;
 
-      console.log(item);
+      // console.log(item);
       let checkArr = [];
-      item.children.forEach(v => {
-        checkArr.push(v.id);
-        v.children.forEach(v2 => {
-          checkArr.push(v2.id);
-          v2.children.forEach(v3 => {
-            checkArr.push(v3.id);
+      function getCheckedIds(item) {
+        if (item.children) {
+          item.children.forEach(v => {
+            getCheckedIds(v);
           });
-        });
-      });
-      console.log(checkArr);
+        } else {
+          checkArr.push(item.id);
+        }
+      }
+      getCheckedIds(item);
+      // console.log(checkArr);
       this.checkedKeys = checkArr;
       this.editItem = item;
     },
 
     async submit() {
-      // this.strictly = false;
-      console.log(this.$refs.tree.getCheckedNodes());
-      let checkedNodes = this.$refs.tree.getCheckedNodes();
+      // console.log(this.$refs.tree.getCheckedNodes());
+      // let checkedNodes = this.$refs.tree.getCheckedNodes();
+      let checkkeys = this.$refs.tree.getCheckedKeys();
+      let halfCheckkeys = this.$refs.tree.getHalfCheckedKeys();
 
-      let checkArr = [];
-      checkedNodes.forEach(v=>{
-        checkArr.push(v.id);
+      // let checkArr = [];
+      // checkedNodes.forEach(v=>{
+      //   checkArr.push(v.id);
+      // });
+
+      let res = await this.$http.post(`roles/${this.editItem.id}/rights`, {
+        // rids: checkArr.join(',')
+        rids: [...checkkeys, ...halfCheckkeys].join(",")
       });
-      console.log(checkArr.join(','));
-
-      let res = await this.$http.post(`roles/${this.editItem.id}/rights`,{
-        rids: checkArr.join(',')
-      })
       console.log(res);
-      if(res.data.meta.status === 200){
+      if (res.data.meta.status === 200) {
         this.getTree();
-        this.treeVisible = false,
-        window.location.reload();
+        this.treeVisible = false;
+        // window.location.reload();
+        let res = await this.$http.get("menus");
+        // console.log(res);
+        // this.menus = res.data.data;
+        this.$store.state.menuList = res.data.data;
       }
-
     },
-    // 
+    //
     handleEdit(v) {},
     delOne(v) {}
   }

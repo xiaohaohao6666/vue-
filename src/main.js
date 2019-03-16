@@ -19,7 +19,23 @@ Vue.use(http)
 import breadcrumb from './components/breadcrumb.vue'
 Vue.component('breadcrumb',breadcrumb);
 
+// vuex 
+import Vuex from 'vuex'
+Vue.use(Vuex);
+const store = new Vuex.Store({
+  // ...
+  state:{
+    menuList: []
+  },
+  mutations: {
+    getMenuList(state,menuList){
+      state.menuList = menuList;
+    }
+  }
+})
+
 new Vue({
+  store,
   router,
   render: h => h(App)
 }).$mount('#app')

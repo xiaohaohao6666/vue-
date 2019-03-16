@@ -35,7 +35,7 @@
     <el-container>
       <el-aside class="my-aside" width="200px">
         <el-menu unique-opened router default-active="2" class="el-menu-vertical-demo">
-          <el-submenu :index="String(index)" v-for="(item, index) in menus">
+          <el-submenu :index="String(index)" v-for="(item, index) in $store.state.menuList">
             <template slot="title">
               <i class="el-icon-location"></i>
               <span>{{item.authName}}</span>
@@ -58,7 +58,7 @@
 export default {
   data() {
     return {
-      menus: []
+      // menus: []
     };
   },
   methods: {
@@ -83,7 +83,8 @@ export default {
   async created() {
     let res = await this.$http.get("menus");
     // console.log(res);
-    this.menus = res.data.data;
+    // this.menus = res.data.data;
+    this.$store.state.menuList = res.data.data;
   }
 };
 </script>
